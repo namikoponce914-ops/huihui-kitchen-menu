@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#fff8f4">
+  <meta name="description" content="灰灰的小厨房，给宝宝的专属点单菜单。">
+  <title>灰灰的小厨房</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="回到顶部"><span class="bow">●</span><span><b>灰灰的小厨房</b><small>MADE WITH LOVE</small></span></a>
+    <span class="status">● 等你来点菜</span>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-copy"><small>✧ HELLO KITTY · BABY'S MENU</small><h1>今天，也要<br><em>好好吃饭。</em></h1><p>选你喜欢的，剩下的交给我。</p><a href="#menu" class="primary">开始点菜 ♥</a></div>
+      <div class="kitty"><img src="assets/hello-kitty-official.png" alt="Hello Kitty"><small>© SANRIO CO., LTD.</small></div>
+    </section>
+
+    <section class="menu-section" id="menu">
+      <div class="section-title"><div><small>宝宝专属 · 慢慢挑</small><h2>今天想要什么？</h2></div><p>心情和饭菜，都可以点给我</p></div>
+      <nav id="filters" class="filters" aria-label="菜单分类"></nav>
+      <div id="menuGrid" class="menu-grid"></div>
+    </section>
+  </main>
+
+  <footer>专属菜单 · 每一份都带着爱<br><small>© SANRIO CO., LTD.</small></footer>
+
+  <button id="cartButton" class="cart-button" type="button"><span>已经选好 <b id="cartCount">0</b> 份</span><strong>去提交 →</strong></button>
+
+  <dialog id="orderDialog" class="sheet">
+    <form method="dialog" class="sheet-card" id="orderForm">
+      <header><div><small>MY LITTLE WISH LIST</small><h2>宝宝的点单</h2></div><button value="cancel" class="close" aria-label="关闭">×</button></header>
+      <div id="cartList" class="cart-list"></div>
+      <label>怎么称呼你<input id="nickname" maxlength="20" placeholder="例如：灰灰宝宝"></label>
+      <label>悄悄话<textarea id="note" maxlength="140" placeholder="还有什么想告诉宝宝？"></textarea></label>
+      <p class="send-tip">提交后会生成一段点单消息，请通过微信分享或复制给宝宝。</p>
+      <button id="createMessage" class="primary full" value="none" type="button">生成点单消息 ♥</button>
+    </form>
+  </dialog>
+
+  <dialog id="messageDialog" class="sheet result-sheet">
+    <section class="sheet-card">
+      <header><div><small>ORDER READY</small><h2>点单消息准备好啦</h2></div><button class="close" id="closeResult" aria-label="关闭">×</button></header>
+      <p>把下面这段话发给宝宝，他就能收到你的心愿。</p>
+      <textarea id="messageText" readonly aria-label="点单消息"></textarea>
+      <div class="result-actions"><button id="shareMessage" class="primary">通过微信分享</button><button id="copyMessage" class="secondary">复制消息</button></div>
+      <p id="resultHint" class="result-hint">如果微信内没有弹出分享面板，请点“复制消息”，回到聊天窗口粘贴发送。</p>
+    </section>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
