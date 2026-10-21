@@ -1,15 +1,27 @@
-# 灰灰的小厨房 · 手机兼容版
+# 灰灰的小厨房
 
-这是针对中国大陆手机网络和微信内置浏览器准备的纯静态版本，不依赖 `chatgpt.site`、Cloudflare D1 或其他后端服务。
+给女朋友使用的可爱点单网页。顾客页面部署在 GitHub Pages，订单通过 Cloudflare Pages Functions 写入 D1 数据库，主理人可以在独立收件箱中实时查看并更新状态。
 
-顾客选好菜单后，网页生成一段完整点单消息。顾客可以调用手机分享面板，或复制文字回到微信发送给主理人。这样不需要服务器存储订单，也不会产生后台费用。
+- 点单页：`index.html`
+- 主理人收件箱：`owner.html`
+- 浏览器端后台地址：`config.js`
+- Pages Functions 源码：`pages-api/_worker.js`
+- D1 建表脚本：`worker/schema.sql`
 
-## 发布
+## 数据流程
 
-目录中的 `index.html`、`styles.css`、`app.js` 和 `assets/` 可直接发布到 GitHub Pages 等静态托管服务。
+1. 顾客在点单页选择心愿并提交。
+2. 页面将订单同步到 Worker，同时生成一份微信分享消息作为备份。
+3. 主理人使用口令打开 `owner.html`，查看最新订单。
+4. 收件箱每 15 秒自动刷新，可以将订单从“待接单”更新为“准备中”和“已完成”。
 
-## 验证
+## 安全说明
 
-- 所有资源使用相对路径，适合项目子目录部署。
-- JavaScript 不包含服务器 API 依赖。
-- 微信不支持系统分享面板时，会自动退回到复制消息流程。
+主理人口令仅保存在 Cloudflare Pages Secret 中，不提交到 GitHub。前端只在当前浏览器会话中暂存已输入的口令。
+
+## 部署
+
+1. 创建 D1 数据库，执行 `worker/schema.sql`。
+2. 将数据库 ID 填入根目录的 `wrangler.jsonc`。
+3. 用 Wrangler 设置 Pages 项目的 `ADMIN_KEY` secret，并部署 `pages-api`。
+4. 把 Pages API 地址写入 `config.js`，提交到 GitHub Pages。

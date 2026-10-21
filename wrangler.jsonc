@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "huihui-kitchen-api",
+  "pages_build_output_dir": "./pages-api",
+  "compatibility_date": "2026-10-21",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "huihui-kitchen-orders",
+      "database_id": "4a298a8d-3ebf-4d07-ad55-9acfae82d3b2"
+    }
+  ]
+}

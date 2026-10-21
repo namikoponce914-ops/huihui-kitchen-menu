@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#fff8f4">
+  <meta name="robots" content="noindex,nofollow">
+  <title>主理人收件箱 · 灰灰的小厨房</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="owner-page">
+  <header class="topbar">
+    <a class="brand" href="./"><span class="bow">●</span><span><b>灰灰的小厨房</b><small>OWNER'S INBOX</small></span></a>
+    <a class="owner-home" href="./">返回菜单</a>
+  </header>
+
+  <main class="owner-main">
+    <section id="loginPanel" class="owner-login">
+      <div class="owner-mark">💌</div>
+      <small>PRIVATE · FOR ZHANG JIAYUAN</small>
+      <h1>主理人收件箱</h1>
+      <p>输入主理人口令，查看宝宝刚刚同步的点单。</p>
+      <label>主理人口令<input id="ownerKey" type="password" inputmode="numeric" maxlength="20" autocomplete="current-password" placeholder="请输入口令"></label>
+      <button id="loginButton" class="primary full" type="button">打开收件箱 ♥</button>
+      <p id="loginError" class="login-error" role="alert"></p>
+    </section>
+
+    <section id="inboxPanel" class="inbox-panel" hidden>
+      <div class="inbox-heading">
+        <div><small>LIVE WISHES</small><h1>宝宝的点单</h1><p id="lastUpdated">正在同步最新订单…</p></div>
+        <div class="inbox-actions"><button id="refreshButton" class="secondary" type="button">刷新</button><button id="logoutButton" class="ghost-button" type="button">退出</button></div>
+      </div>
+      <div class="owner-stats">
+        <article><span>待接单</span><b id="pendingCount">0</b></article>
+        <article><span>准备中</span><b id="cookingCount">0</b></article>
+        <article><span>已完成</span><b id="doneCount">0</b></article>
+      </div>
+      <div id="orderList" class="owner-orders"><div class="loading-card">正在打开收件箱…</div></div>
+    </section>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="owner.js"></script>
+</body>
+</html>
