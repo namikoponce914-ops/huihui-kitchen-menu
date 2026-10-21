@@ -24,6 +24,28 @@ grid.addEventListener("input",e=>{if(!e.target.matches("[data-wish]"))return;con
 grid.addEventListener("click",e=>{const b=e.target.closest("[data-action]");if(!b)return;const d=dishes.find(x=>x.id===b.dataset.id),old=cart.get(d.id)||{qty:0,customText:""};const qty=Math.max(0,Math.min(9,old.qty+(b.dataset.action==="plus"?1:-1)));if(qty)cart.set(d.id,{...old,qty});else cart.delete(d.id);renderMenu();updateCount();});
 function renderCart(){const selected=dishes.filter(d=>cart.get(d.id)?.qty);document.querySelector("#cartList").innerHTML=selected.length?selected.map(d=>{const i=cart.get(d.id);return `<div class="cart-line"><span><b>${d.name}</b>${i.customText?`<small>想要：${escapeHtml(i.customText)}</small>`:""}</span><strong>× ${i.qty}</strong></div>`}).join(""):`<p>还没有选择内容，先去挑一挑吧。</p>`;}
 document.querySelector("#cartButton").addEventListener("click",()=>{if(!cart.size)return toast("先选一份心愿吧");renderCart();document.querySelector("#orderDialog").showModal();});
+let pendingSubmission=null;
+async function postOrder(payload){
+ if(!API_BASE)throw new Error("同步后台尚未配置");
+ const response=await fetch(`${API_BASE}/orders`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload)});
+ const data=await response.json().catch(()=>({}));
+ if(!response.ok)throw new Error(data.error||"提交失败");
+ return data;
+}
+function setResultState(state,{number="",message="",error=""}={}){
+ const success=state==="success";
+ const failed=state==="failed";
+ document.querySelector("#resultEyebrow").textContent=success?"ORDER RECEIVED":failed?"SEND FAILED":"SENDING ORDER";
+ document.querySelector("#resultTitle").textContent=success?"订单提交成功":failed?"订单还没有提交":"正在提交订单";
+ document.querySelector("#resultIcon").textContent=success?"🎀":failed?"😿":"💌";
+ document.querySelector("#syncResult").textContent=success?`主理人已经收到这份点单${number?`，订单号 ${number}`:""}。`:failed?`没有成功连接收件箱：${error||"请重新提交"}`:"正在把心愿送到主理人收件箱……";
+ document.querySelector("#finishOrder").hidden=!success;
+ document.querySelector("#retryOrder").hidden=!failed;
+ document.querySelector("#copyMessage").hidden=!failed;
+ document.querySelector("#messageText").hidden=!failed;
+ document.querySelector("#messageText").value=message;
+ document.querySelector("#resultHint").textContent=failed?"请先点“重新提交订单”；多次失败时再复制备用消息发给主理人。":"订单已经完成提交，不需要再复制或发送消息。";
+}
 document.querySelector("#createMessage").addEventListener("click",async()=>{
  const custom=cart.get("custom");
  if(custom?.qty&&!custom.customText.trim())return toast("请填写想买的东西");
@@ -32,26 +54,35 @@ document.querySelector("#createMessage").addEventListener("click",async()=>{
  const selected=dishes.filter(d=>cart.get(d.id)?.qty).map(d=>{const i=cart.get(d.id);return {id:d.id,name:d.name,qty:i.qty,customText:(i.customText||"").trim()};});
  const lines=selected.map(i=>`• ${i.name}${i.customText?`：${i.customText}`:""} × ${i.qty}`);
  const now=new Date();
- let orderNumber="";
- let syncOk=false;
+ const message=`🍓 灰灰的小厨房 · 宝宝点单\n\n点单人：${nickname}\n时间：${now.toLocaleString("zh-CN",{month:"long",day:"numeric",hour:"2-digit",minute:"2-digit"})}\n\n${lines.join("\n")}${note?`\n\n悄悄话：${note}`:""}\n\n请张珈源主理人查收 ♥`;
+ pendingSubmission={payload:{nickname,note,items:selected},message};
  const submit=document.querySelector("#createMessage");
- submit.disabled=true;submit.textContent="正在同步点单…";
+ submit.disabled=true;submit.textContent="正在提交订单…";
+ setResultState("sending",{message});
  try{
-  if(!API_BASE)throw new Error("同步后台尚未配置");
-  const response=await fetch(`${API_BASE}/orders`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({nickname,note,items:selected})});
-  const data=await response.json().catch(()=>({}));
-  if(!response.ok)throw new Error(data.error||"同步失败");
-  orderNumber=data.number||"";syncOk=true;
- }catch(error){console.error(error);}
- finally{submit.disabled=false;submit.textContent="同步点单并生成消息 ♥";}
- const numberLine=orderNumber?`订单号：${orderNumber}\n`:"";
- const message=`🍓 灰灰的小厨房 · 宝宝点单\n\n${numberLine}点单人：${nickname}\n时间：${now.toLocaleString("zh-CN",{month:"long",day:"numeric",hour:"2-digit",minute:"2-digit"})}\n\n${lines.join("\n")}${note?`\n\n悄悄话：${note}`:""}\n\n请张珈源主理人查收 ♥`;
- document.querySelector("#messageText").value=message;
- document.querySelector("#syncResult").textContent=syncOk?`点单已同步到主理人收件箱${orderNumber?`，订单号 ${orderNumber}`:""}。也可以把下面的消息发给宝宝。`:"云端同步暂时失败，请先把下面的消息通过微信发给宝宝。";
- document.querySelector("#orderDialog").close();document.querySelector("#messageDialog").showModal();
+  const data=await postOrder(pendingSubmission.payload);
+  setResultState("success",{number:data.number,message});
+  cart.clear();renderMenu();updateCount();
+  document.querySelector("#orderDialog").close();document.querySelector("#messageDialog").showModal();
+ }catch(error){
+  console.error(error);
+  setResultState("failed",{message,error:error.message});
+  document.querySelector("#orderDialog").close();document.querySelector("#messageDialog").showModal();
+ }finally{submit.disabled=false;submit.textContent="提交订单 ♥";}
+});
+document.querySelector("#retryOrder").addEventListener("click",async()=>{
+ if(!pendingSubmission)return;
+ const button=document.querySelector("#retryOrder");
+ button.disabled=true;button.textContent="正在重新提交…";
+ try{
+  const data=await postOrder(pendingSubmission.payload);
+  setResultState("success",{number:data.number,message:pendingSubmission.message});
+  cart.clear();renderMenu();updateCount();
+ }catch(error){setResultState("failed",{message:pendingSubmission.message,error:error.message});}
+ finally{button.disabled=false;button.textContent="重新提交订单";}
 });
 async function copyMessage(){const text=document.querySelector("#messageText").value;try{await navigator.clipboard.writeText(text);toast("点单消息已复制");document.querySelector("#resultHint").textContent="已经复制好啦，回到微信聊天窗口粘贴发送给宝宝。";}catch{const box=document.querySelector("#messageText");box.focus();box.select();toast("请长按文字复制");}}
 document.querySelector("#copyMessage").addEventListener("click",copyMessage);
-document.querySelector("#shareMessage").addEventListener("click",async()=>{const text=document.querySelector("#messageText").value;if(navigator.share){try{await navigator.share({title:"灰灰的小厨房点单",text});return;}catch(e){if(e.name==="AbortError")return;}}await copyMessage();});
+document.querySelector("#finishOrder").addEventListener("click",()=>document.querySelector("#messageDialog").close());
 document.querySelector("#closeResult").addEventListener("click",()=>document.querySelector("#messageDialog").close());
 renderFilters();renderMenu();updateCount();

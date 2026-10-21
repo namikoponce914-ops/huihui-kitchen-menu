@@ -37,18 +37,19 @@
       <div id="cartList" class="cart-list"></div>
       <label>怎么称呼你<input id="nickname" maxlength="20" placeholder="例如：灰灰宝宝"></label>
       <label>悄悄话<textarea id="note" maxlength="140" placeholder="还有什么想告诉宝宝？"></textarea></label>
-      <p class="send-tip">提交后会同步到主理人收件箱，同时生成一段可以微信分享的点单消息。</p>
-      <button id="createMessage" class="primary full" value="none" type="button">同步点单并生成消息 ♥</button>
+      <p class="send-tip">点击提交后，订单会直接同步到主理人收件箱。</p>
+      <button id="createMessage" class="primary full" value="none" type="button">提交订单 ♥</button>
     </form>
   </dialog>
 
   <dialog id="messageDialog" class="sheet result-sheet">
     <section class="sheet-card">
-      <header><div><small>ORDER READY</small><h2>点单消息准备好啦</h2></div><button class="close" id="closeResult" aria-label="关闭">×</button></header>
+      <header><div><small id="resultEyebrow">SENDING ORDER</small><h2 id="resultTitle">正在提交订单</h2></div><button class="close" id="closeResult" aria-label="关闭">×</button></header>
+      <div id="resultIcon" class="result-icon">💌</div>
       <p id="syncResult">正在把心愿送到主理人收件箱……</p>
-      <textarea id="messageText" readonly aria-label="点单消息"></textarea>
-      <div class="result-actions"><button id="shareMessage" class="primary">通过微信分享</button><button id="copyMessage" class="secondary">复制消息</button></div>
-      <p id="resultHint" class="result-hint">如果微信内没有弹出分享面板，请点“复制消息”，回到聊天窗口粘贴发送。</p>
+      <textarea id="messageText" readonly aria-label="备用点单消息" hidden></textarea>
+      <div class="result-actions"><button id="finishOrder" class="primary" type="button" hidden>完成</button><button id="retryOrder" class="primary" type="button" hidden>重新提交订单</button><button id="copyMessage" class="secondary" type="button" hidden>复制备用消息</button></div>
+      <p id="resultHint" class="result-hint"></p>
     </section>
   </dialog>
 
